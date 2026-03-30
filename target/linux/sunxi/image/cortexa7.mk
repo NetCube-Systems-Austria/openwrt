@@ -92,6 +92,16 @@ define Device/lemaker_bananapi
 endef
 TARGET_DEVICES += lemaker_bananapi
 
+define Device/netcube_nagami-basic-carrier
+  $(call Device/eMMCImage)
+  $(call Device/FitImageGzipNoDtb)
+  DEVICE_VENDOR := NetCube Systems Austria
+  DEVICE_MODEL := Nagami Basic Carrier Board
+  DEVICE_PACKAGES:=kmod-rtc-sunxi
+  SOC := sun8i-t113
+endef
+TARGET_DEVICES += netcube_nagami-basic-carrier
+
 define Device/pine64_pinecube
   $(call Device/FitImageGzip)
   DEVICE_VENDOR := Pine64

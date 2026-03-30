@@ -1,0 +1,45 @@
+#
+# Copyright (C) 2026 OpenWrt.org
+#
+
+[ -e /etc/config/ubootenv ] && exit 0
+
+touch /etc/config/ubootenv
+
+. /lib/uboot-envtools.sh
+. /lib/functions.sh
+
+rootpartuuid() {
+	local cmdline bootpart uuid
+
+	cmdline="$(cat /proc/cmdline)"
+	bootpart="${cmdline##*root=}"
+	bootpart="${bootpart%% *}"
+	uuid="${bootpart#PARTUUID=}"
+	echo "${uuid%-02}"
+}
+
+bootdev_from_uuid() {
+	blkid | grep "PTUUID=\"$(rootpartuuid)\"" | cut -d : -f1
+}
+
+board="$(board_name)"
+
+case "$board" in
+netcube,nagami-basic-carrier)
+	bootdev="$(bootdev_from_uuid)"
+	case "$bootdev" in
+	/dev/mmcblk1)
+		ubootenv_add_uci_config "/dev/mmcblk1boot0" "-0x10000" "0x10000" "0x10000" "1"
+		;;
+	/dev/mmcblk0)
+		ubootenv_add_uci_config "/dev/mmcblk0" "0xF0000" "0x10000" "0x10000" "1"
+		;;
+	esac
+	;;
+esac
+
+config_load ubootenv
+config_foreach ubootenv_add_app_config ubootenv
+
+exit 0

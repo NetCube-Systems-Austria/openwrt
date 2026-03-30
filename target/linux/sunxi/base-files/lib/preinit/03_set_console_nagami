@@ -1,0 +1,13 @@
+. /lib/functions/system.sh
+
+preinit_set_console_nagami() {
+	case "$(board_name)" in
+	netcube,nagami-basic-carrier)
+		[ -f /etc/inittab ] || return 0
+		grep -q '^ttyS3::askfirst:' /etc/inittab && return 0
+		sed -i 's/^ttyS0::askfirst:/ttyS3::askfirst:/' /etc/inittab
+		;;
+	esac
+}
+
+boot_hook_add preinit_main preinit_set_console_nagami

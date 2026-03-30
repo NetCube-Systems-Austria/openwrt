@@ -26,6 +26,24 @@ define Build/sunxi-sdcard
 	rm -f $@.boot
 endef
 
+define Build/sunxi-emmc
+	rm -f $@.boot
+	mkfs.fat $@.boot -C $(FAT32_BLOCKS)
+
+	mcopy -i $@.boot $(STAGING_DIR_IMAGE)/$(DEVICE_NAME)-boot.scr ::boot.scr
+	mcopy -i $@.boot $(IMAGE_KERNEL) ::uImage
+	./gen_sunxi_emmc_img.sh $@ \
+		$@.boot \
+		$(IMAGE_ROOTFS) \
+		$(CONFIG_SUNXI_SD_BOOT_PARTSIZE) \
+		$(CONFIG_TARGET_ROOTFS_PARTSIZE)
+	rm -f $@.boot
+endef
+
+define Build/sunxi-install-uboot
+	cp $(STAGING_DIR_IMAGE)/$(DEVICE_NAME)-u-boot-with-spl.bin $@
+endef
+
 # why \x00\x00\x00\x00 for zImage-initramfs
 define Device/Default
   PROFILES := Default
@@ -37,12 +55,23 @@ define Device/Default
   SUNXI_DTS = $$(SUNXI_DTS_DIR)$$(SOC)-$(lastword $(subst _, ,$(1)))
 endef
 
+define Device/eMMCImage
+  IMAGES += emmc.img.gz
+  IMAGE/emmc.img.gz := sunxi-emmc | append-metadata | gzip
+  ARTIFACTS += u-boot-with-spl.bin
+  ARTIFACT/u-boot-with-spl.bin := sunxi-install-uboot
+endef
+
 define Device/FitImageLzma
   KERNEL = kernel-bin | lzma | fit lzma $$(DTS_DIR)/$$(SUNXI_DTS).dtb
 endef
 
 define Device/FitImageGzip
   KERNEL = kernel-bin | gzip | fit gzip $$(DTS_DIR)/$$(SUNXI_DTS).dtb
+endef
+
+define Device/FitImageGzipNoDtb
+  KERNEL = kernel-bin | gzip | fit gzip
 endef
 
 include $(SUBTARGET).mk
