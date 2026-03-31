@@ -32,7 +32,7 @@ define Build/sunxi-emmc
 
 	mcopy -i $@.boot $(STAGING_DIR_IMAGE)/$(DEVICE_NAME)-boot.scr ::boot.scr
 	mcopy -i $@.boot $(IMAGE_KERNEL) ::uImage
-	./gen_sunxi_emmc_img.sh $@ \
+	./gen_sunxi_sdcard_img.sh $@ \
 		$@.boot \
 		$(IMAGE_ROOTFS) \
 		$(CONFIG_SUNXI_SD_BOOT_PARTSIZE) \

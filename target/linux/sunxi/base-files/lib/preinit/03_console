@@ -1,6 +1,6 @@
 . /lib/functions/system.sh
 
-preinit_set_console_nagami() {
+set_console() {
 	case "$(board_name)" in
 	netcube,nagami-basic-carrier)
 		[ -f /etc/inittab ] || return 0
@@ -10,4 +10,4 @@ preinit_set_console_nagami() {
 	esac
 }
 
-boot_hook_add preinit_main preinit_set_console_nagami
+boot_hook_add preinit_mount_root set_console

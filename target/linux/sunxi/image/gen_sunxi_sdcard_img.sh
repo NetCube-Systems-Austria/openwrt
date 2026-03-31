@@ -4,8 +4,8 @@
 # Copyright (C) 2013 OpenWrt.org
 
 set -ex
-[ $# -eq 6 ] || {
-    echo "SYNTAX: $0 <file> <bootfs image> <rootfs image> <bootfs size> <rootfs size> <u-boot image>"
+[ $# -ge 5 ] || {
+    echo "SYNTAX: $0 <file> <bootfs image> <rootfs image> <bootfs size> <rootfs size> [u-boot image]"
     exit 1
 }
 
@@ -26,6 +26,6 @@ BOOTSIZE="$(($2 / 512))"
 ROOTFSOFFSET="$(($3 / 512))"
 ROOTFSSIZE="$(($4 / 512))"
 
-dd bs=1024 if="$UBOOT" of="$OUTPUT" seek=8 conv=notrunc
+[ -n "$UBOOT" ] && dd bs=1024 if="$UBOOT" of="$OUTPUT" seek=8 conv=notrunc
 dd bs=512 if="$BOOTFS" of="$OUTPUT" seek="$BOOTOFFSET" conv=notrunc
 dd bs=512 if="$ROOTFS" of="$OUTPUT" seek="$ROOTFSOFFSET" conv=notrunc

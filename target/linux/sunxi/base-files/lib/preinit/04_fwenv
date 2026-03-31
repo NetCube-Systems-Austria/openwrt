@@ -1,0 +1,44 @@
+. /lib/functions/system.sh
+. /lib/uboot-envtools.sh
+
+bootdev_from_cmdline() {
+	local arg
+
+	for arg in $(cat /proc/cmdline); do
+		case "$arg" in
+		bootdev=*)
+			echo "${arg#bootdev=}"
+			return 0
+			;;
+		esac
+	done
+
+	return 1
+}
+
+set_fwenv_nagami() {
+	local bootdev
+
+	case "$(board_name)" in
+	netcube,nagami-basic-carrier)
+		[ -e /etc/config/ubootenv ] && return 0
+		touch /etc/config/ubootenv || return 0
+
+		bootdev="$(bootdev_from_cmdline)" || return 0
+
+		case "$bootdev" in
+		1)
+			ubootenv_add_uci_config "/dev/mmcblk1boot0" "-0x10000" "0x10000" "0x10000" "1"
+			;;
+		0)
+			ubootenv_add_uci_config "/dev/mmcblk0" "0xf0000" "0x10000" "0x10000" "1"
+			;;
+		esac
+
+		config_load ubootenv
+		config_foreach ubootenv_add_app_config ubootenv
+		;;
+	esac
+}
+
+boot_hook_add preinit_mount_root set_fwenv_nagami
